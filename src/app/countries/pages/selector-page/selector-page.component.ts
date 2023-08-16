@@ -13,7 +13,7 @@ export class SelectorPageComponent implements OnInit{
 
 
   public countriesByRegion: SmallCountry[]=[];
-  public borders: string[]=[];
+  public borders: SmallCountry[]=[];
   public myForm: FormGroup=this.fb.group({
     region:['',Validators.required],
     country:['',Validators.required],
@@ -50,13 +50,16 @@ export class SelectorPageComponent implements OnInit{
   onCountryChange():void{
     this.myForm.get('country')!.valueChanges
     .pipe(
+      // Añade un efecto secundario
       tap(()=>this.myForm.get('border')!.setValue('')),
+      // Filtra en caso de que el valor no sea mayor a 0
       filter((value:string)=>value.length>0),
       // Me permite recibir un observable y suscribirme a otro observable
-      switchMap((alphacode)=>this.countriesService.getCountryByAlphaCode(alphacode))
+      switchMap((alphacode)=>this.countriesService.getCountryByAlphaCode(alphacode)),
+      switchMap((country)=>this.countriesService.getCountryBordersByCodes(country.borders))
     )
     .subscribe(country=>{
-      this.borders=country.borders;
+      this.borders=country;
       // this.countriesByRegion=countries
     });
   }
